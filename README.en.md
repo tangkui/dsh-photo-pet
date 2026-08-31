@@ -32,6 +32,7 @@ Browser (web GUI at 127.0.0.1:3080)
 | Drag to move | Drag the pet anywhere; the position is saved automatically |
 | Naming | The pet has its own name shown in a hover nameplate; editable in settings |
 | Working lines | Custom bubble lines (one per line) while the model works; swap interval configurable |
+| Click lines | Rotates through custom bubble lines on every click; configurable |
 | Hover fan menu | Circular menu on hover; every item can be toggled, with show-all / hide-all shortcuts |
 | State animations | Idle sway, click bounce, working sway with a cigarette smoke effect |
 | Hide / summon | One-click hide; hovering the spot brings up a summon button |
@@ -137,6 +138,7 @@ Open **Settings → My Pet** in the left navigation:
 - **Size / Right offset / Bottom offset** — size and position
 - **Smart trim / AI auto cutout** — automatic processing toggles on upload
 - **Working lines / Swap interval** — bubble text and rotation pace while working
+- **Click lines** — bubble text on every click, one line per click
 - **Hover menu items** — per-item toggles with show-all / hide-all shortcuts
 - **Quick actions** — upload photo / AI cutout / reset photo, same actions as the fan menu
 
