@@ -111,6 +111,7 @@ Open **Settings → My Pet** in the left navigation:
 
 ```bash
 # Smoke tests (headless jsdom: mount / menu / upload / AI path / work lines / settings card)
+# Note: the test environment needs Node.js >= 22.19 (jsdom 30 pulls in undici 8)
 cd test
 npm install
 npm test

@@ -111,6 +111,7 @@ curl -s http://127.0.0.1:3080/plugins/dsh-photo-pet/client.js
 
 ```bash
 # 冒烟测试(jsdom 无头环境,覆盖挂载/菜单/上传/AI 路径/工作话语/设置卡片)
+# 注意:测试环境需要 Node.js >= 22.19(jsdom 30 的 undici 依赖要求)
 cd test
 npm install
 npm test
