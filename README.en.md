@@ -33,7 +33,7 @@ Browser (web GUI at 127.0.0.1:3080)
 | Naming | The pet has its own name shown in a hover nameplate; editable in settings |
 | Working lines | Custom bubble lines (one per line) while the model works; swap interval configurable |
 | Click lines | Rotates through custom bubble lines on every click; configurable |
-| Feeding | 🍗 in the fan menu: the pet bounces, a snack floats up, feeding lines rotate; configurable |
+| Feeding | 🍗 in the fan menu: the pet bounces, a 💩 floats up, feeding lines rotate; configurable |
 | Hover fan menu | Circular menu on hover; every item can be toggled, with show-all / hide-all shortcuts |
 | State animations | Idle sway, click bounce, working sway with a cigarette smoke effect |
 | Hide / summon | One-click hide; hovering the spot brings up a summon button |
