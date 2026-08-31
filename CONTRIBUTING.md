@@ -21,6 +21,7 @@
 
 ```bash
 # 冒烟测试(jsdom 无头环境,不需要真实 DSH 实例)
+# 需要 Node.js >= 22.19(jsdom 30 的 undici 依赖要求)
 cd test
 npm install
 npm test
