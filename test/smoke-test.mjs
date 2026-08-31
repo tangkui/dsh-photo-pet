@@ -507,6 +507,33 @@ const seq = [
 assert(seq.join(',') === 'A,B,C,A', 'click lines rotate A→B→C→A across clicks');
 capturedDisposer();
 
+console.log('feeding:');
+// 喂食 is a fan-menu button (🍗, configurable like the others). With custom
+// feedLines it rotates A→B→C→A per feed, and a floating snack appears.
+settings = { enabled: true, visible: true, size: 140, right: 40, bottom: 40, name: '小宠', feedLines: 'A\nB\nC' };
+apply(ctx);
+await waitFor(() => document.querySelector('.pp-shell') !== null);
+const feedOnce = async (expected) => {
+  await hoverShell();
+  const feedBtn = Array.from(document.querySelectorAll('.pp-fan-btn')).find((b) => b.textContent === '🍗');
+  if (feedBtn === undefined) throw new Error('ASSERT FAILED: feed button missing from the fan menu');
+  feedBtn.click();
+  await waitFor(() => {
+    const b = document.querySelector('.pp-bubble');
+    return b !== null && b.textContent === expected;
+  });
+  assert(document.querySelector('.pp-food') !== null, 'floating snack appears while feeding');
+  return document.querySelector('.pp-bubble').textContent;
+};
+const feedSeq = [
+  await feedOnce('A'),
+  await feedOnce('B'),
+  await feedOnce('C'),
+  await feedOnce('A'),
+];
+assert(feedSeq.join(',') === 'A,B,C,A', 'feed lines rotate A→B→C→A across feeds');
+capturedDisposer();
+
 console.log('settings card:');
 // The settings page renders first-level sections from the 'settings.section'
 // slot (the LEFT NAV, same level as 插件). The photo-pet section must be
@@ -550,6 +577,13 @@ injected.save();
 await new Promise((r) => setTimeout(r, 60));
 const clickCalls = scopeCalls.slice(clickCallsStart);
 assert(clickCalls.some((c) => c[0] === 'set' && c[1] === 'clickLines' && c[2] === '嘿！\n干嘛呢'), 'click lines editable in the card and land via set');
+// The feed-lines field is configurable in the card too.
+const feedCallsStart = scopeCalls.length;
+await injected.edit('feedLines', '好香！\n开饭啦');
+injected.save();
+await new Promise((r) => setTimeout(r, 60));
+const feedCalls = scopeCalls.slice(feedCallsStart);
+assert(feedCalls.some((c) => c[0] === 'set' && c[1] === 'feedLines' && c[2] === '好香！\n开饭啦'), 'feed lines editable in the card and land via set');
 cardDisposer();
 assert(document.querySelector('#dsh-photo-pet-settings-style') === null, 'card styles released on teardown');
 
