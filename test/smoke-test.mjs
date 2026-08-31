@@ -410,17 +410,17 @@ assert(settings.name === '豆豆', 'name persisted to settings');
 await new Promise((r) => setTimeout(r, 2900));
 const nameplate2 = document.querySelector('.pp-nameplate');
 assert(nameplate2 !== null && nameplate2.textContent === '豆豆', 'nameplate shows the new name on hover');
-// Clicking the pet occasionally greets with its name (30% per click);
-// 30 clicks make a miss practically impossible.
-let greetedWithName = false;
-for (let i = 0; i < 30 && !greetedWithName; i++) {
-  const petEl = document.querySelector('.pp-pet');
-  petEl.dispatchEvent(new window.PointerEvent('pointerdown', { bubbles: true, pointerId: 1, button: 0, clientX: 0, clientY: 0 }));
-  petEl.dispatchEvent(new window.PointerEvent('pointerup', { bubbles: true, pointerId: 1, button: 0, clientX: 0, clientY: 0 }));
-  await new Promise((r) => setTimeout(r, 20));
-  greetedWithName = (document.querySelector('.pp-bubble')?.textContent ?? '').includes('我是豆豆');
-}
-assert(greetedWithName, 'pet greets with its name on click');
+// Clicking the pet rotates through the click lines; with no custom
+// configuration the built-in pool is used (and no name-intro is injected).
+const builtinClickLines = ['摸摸我～', '主人好呀！', '我在呢～', '今天也要加油哦！', '喵～', '汪！', '嘿嘿，被你发现了', '最喜欢你啦', '要一直陪着我哦', '累了吗？歇会儿吧', '啾～', '呼噜呼噜…'];
+const petEl = document.querySelector('.pp-pet');
+petEl.dispatchEvent(new window.PointerEvent('pointerdown', { bubbles: true, pointerId: 1, button: 0, clientX: 0, clientY: 0 }));
+petEl.dispatchEvent(new window.PointerEvent('pointerup', { bubbles: true, pointerId: 1, button: 0, clientX: 0, clientY: 0 }));
+await waitFor(() => {
+  const b = document.querySelector('.pp-bubble');
+  return b !== null && builtinClickLines.includes(b.textContent);
+});
+assert(builtinClickLines.includes(document.querySelector('.pp-bubble').textContent), 'click shows a built-in click line');
 capturedDisposer();
 
 console.log('working scenario:');
@@ -459,6 +459,31 @@ assert(document.querySelector('.pp-smoke') === null, 'smoke effect gone when idl
 assert(document.querySelector('.pp-bubble') === null, 'work bubble cleared');
 capturedDisposer();
 
+console.log('click lines rotation:');
+// Custom click lines configured through the settings surface: every click
+// advances to the next line and wraps around (A → B → C → A).
+settings = { enabled: true, visible: true, size: 140, right: 40, bottom: 40, name: '小宠', clickLines: 'A\nB\nC' };
+apply(ctx);
+await waitFor(() => document.querySelector('.pp-shell') !== null);
+const petClickEl = document.querySelector('.pp-pet');
+const clickOnce = async (expected) => {
+  petClickEl.dispatchEvent(new window.PointerEvent('pointerdown', { bubbles: true, pointerId: 2, button: 0, clientX: 0, clientY: 0 }));
+  petClickEl.dispatchEvent(new window.PointerEvent('pointerup', { bubbles: true, pointerId: 2, button: 0, clientX: 0, clientY: 0 }));
+  await waitFor(() => {
+    const b = document.querySelector('.pp-bubble');
+    return b !== null && b.textContent === expected;
+  });
+  return document.querySelector('.pp-bubble').textContent;
+};
+const seq = [
+  await clickOnce('A'),
+  await clickOnce('B'),
+  await clickOnce('C'),
+  await clickOnce('A'),
+];
+assert(seq.join(',') === 'A,B,C,A', 'click lines rotate A→B→C→A across clicks');
+capturedDisposer();
+
 console.log('settings card:');
 // The settings page renders first-level sections from the 'settings.section'
 // slot (the LEFT NAV, same level as 插件). The photo-pet section must be
@@ -495,6 +520,13 @@ await new Promise((r) => setTimeout(r, 60));
 const fanCalls = scopeCalls.slice(fanCallsStart);
 assert(fanCalls.some((c) => c[0] === 'set' && c[1] === 'fanMenuItems' && c[2] === ''), 'hide-all persists as an empty string (set, not unset)');
 assert(!fanCalls.some((c) => c[0] === 'unset' && c[1] === 'fanMenuItems'), 'hide-all does not clear the field back to the schema default');
+// The click-lines field is a configurable textarea in the card, like workLines.
+const clickCallsStart = scopeCalls.length;
+await injected.edit('clickLines', '嘿！\n干嘛呢');
+injected.save();
+await new Promise((r) => setTimeout(r, 60));
+const clickCalls = scopeCalls.slice(clickCallsStart);
+assert(clickCalls.some((c) => c[0] === 'set' && c[1] === 'clickLines' && c[2] === '嘿！\n干嘛呢'), 'click lines editable in the card and land via set');
 cardDisposer();
 assert(document.querySelector('#dsh-photo-pet-settings-style') === null, 'card styles released on teardown');
 
