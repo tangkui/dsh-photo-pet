@@ -39,7 +39,15 @@
 - DeepSeek Harness(DSH)Web GUI,版本 `>= 0.1.1-rc.1`
 - Node.js 18+(DSH 自带运行环境)
 
-### 从 GitHub 安装(推荐)
+### 通过 npm 安装(发布后,最简单)
+
+```bash
+dsh plugin --profile web add dsh-photo-pet
+```
+
+DSH 会把插件装进 `web` profile 并自动注册 bundle;重启 Web 服务后刷新页面即可。
+
+### 从 GitHub 安装
 
 ```bash
 # 1. 克隆插件源码
@@ -107,6 +115,8 @@ cd test
 npm install
 npm test
 ```
+
+GitHub Actions 会在每次 push / PR 时自动跑同一套冒烟测试(`.github/workflows/ci.yml`)。**main 分支受保护:所有改动必须通过其他分支发起 Pull Request,至少 1 人评审、CI 通过后才能合并。**
 
 仓库结构:
 

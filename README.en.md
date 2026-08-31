@@ -39,7 +39,15 @@ The plugin follows the official DSH plugin shape (cordis bundle: host half + cli
 - DeepSeek Harness (DSH) Web GUI `>= 0.1.1-rc.1`
 - Node.js 18+ (DSH bundles its own runtime)
 
-### Install from GitHub (recommended)
+### Install via npm (after publishing, simplest)
+
+```bash
+dsh plugin --profile web add dsh-photo-pet
+```
+
+DSH installs the plugin into the `web` profile and registers the bundle automatically; restart the web service and refresh the page.
+
+### Install from GitHub
 
 ```bash
 # 1. Clone the plugin
@@ -107,6 +115,8 @@ cd test
 npm install
 npm test
 ```
+
+GitHub Actions runs the same smoke suite on every push / PR (`.github/workflows/ci.yml`). **`main` is protected: all changes must come from other branches via Pull Request with at least 1 review and a green CI.**
 
 Layout:
 
