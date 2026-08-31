@@ -37,6 +37,7 @@ Browser (web GUI at 127.0.0.1:3080)
 | State animations | Idle sway, click bounce, working sway with a cigarette smoke effect |
 | Hide / summon | One-click hide; hovering the spot brings up a summon button |
 | Settings panel | "My Pet" left-nav section: enable, visibility, name, size, position, trim/AI toggles, lines & menu config; renaming updates the menu live |
+| One-click update / uninstall | Shows the plugin version; updates from npm or uninstalls in one click (auto-restarts after) |
 
 ## Installation
 
@@ -141,6 +142,7 @@ Open **Settings → My Pet** in the left navigation:
 - **Click lines** — bubble text on every click, one line per click
 - **Hover menu items** — per-item toggles with show-all / hide-all shortcuts
 - **Quick actions** — upload photo / AI cutout / reset photo, same actions as the fan menu
+- **Plugin management** — shows the installed plugin version; checks and updates from npm in one click, or uninstalls (the GUI restarts automatically after)
 
 ## Data & cache
 
