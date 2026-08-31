@@ -44,6 +44,8 @@ globalThis.DocumentFragment = window.DocumentFragment;
 let stateValue = { photo: false, photoUrl: null };
 let activityValue = { working: false };
 let uploadCount = 0;
+let updatePostCount = 0;
+let uninstallPostCount = 0;
 globalThis.fetch = async (url, options = {}) => {
   const u = String(url);
   if (u.includes('/api/photo-pet/state')) {
@@ -51,6 +53,19 @@ globalThis.fetch = async (url, options = {}) => {
   }
   if (u.includes('/api/photo-pet/activity')) {
     return { ok: true, status: 200, json: async () => activityValue };
+  }
+  // NOTE: the check route must match before the generic update route —
+  // '/api/photo-pet/update/check' contains '/api/photo-pet/update'.
+  if (u.includes('/api/photo-pet/update/check')) {
+    return { ok: true, status: 200, json: async () => ({ installed: '0.1.1', latest: '0.1.1', upToDate: true }) };
+  }
+  if (u.includes('/api/photo-pet/update') && options.method === 'POST') {
+    updatePostCount += 1;
+    return { ok: true, status: 200, json: async () => ({ ok: true, updated: false }) };
+  }
+  if (u.includes('/api/photo-pet/uninstall') && options.method === 'POST') {
+    uninstallPostCount += 1;
+    return { ok: true, status: 200, json: async () => ({ ok: true, restarting: true }) };
   }
   if (u.includes('/api/photo-pet/photo')) {
     if (options.method === 'POST') {
@@ -78,12 +93,13 @@ if (entry === null) throw new Error('bundle did not register a factory');
 if (entry.id !== 'dsh-photo-pet') throw new Error('unexpected bundle id: ' + entry.id);
 
 // Run the factory with a require shim.
-const { apply, inject } = entry.factory((specifier) => {
+const factoryResult = entry.factory((specifier) => {
   if (specifier === 'react') return require('react');
   if (specifier === 'react-dom/client') return require('react-dom/client');
   if (specifier === 'react-dom') return require('react-dom');
   throw new Error('unexpected require: ' + specifier);
 });
+const { apply, inject, pluginManage } = factoryResult;
 
 if (!Array.isArray(inject) || !inject.includes('settingsScope')) {
   throw new Error('inject face missing settingsScope: ' + JSON.stringify(inject));
@@ -529,5 +545,16 @@ const clickCalls = scopeCalls.slice(clickCallsStart);
 assert(clickCalls.some((c) => c[0] === 'set' && c[1] === 'clickLines' && c[2] === '嘿！\n干嘛呢'), 'click lines editable in the card and land via set');
 cardDisposer();
 assert(document.querySelector('#dsh-photo-pet-settings-style') === null, 'card styles released on teardown');
+
+console.log('plugin management:');
+// The settings card's 更新/卸载 buttons run through the pluginManage surface:
+// a version check against the host + POSTs that trigger the real commands.
+assert(typeof pluginManage?.check === 'function' && typeof pluginManage?.update === 'function' && typeof pluginManage?.uninstall === 'function', 'factory exposes the pluginManage surface');
+const versionInfo = await pluginManage.check();
+assert(versionInfo !== null && versionInfo.installed === '0.1.1' && versionInfo.latest === '0.1.1' && versionInfo.upToDate === true, 'version check returns installed/latest/upToDate');
+const updateResult = await pluginManage.update();
+assert(updatePostCount === 1 && updateResult !== null && updateResult.updated === false, 'update POST fired and reports up-to-date');
+const uninstallResult = await pluginManage.uninstall();
+assert(uninstallPostCount === 1 && uninstallResult !== null && uninstallResult.ok === true, 'uninstall POST fired');
 
 console.log('\nSMOKE TEST PASSED');
