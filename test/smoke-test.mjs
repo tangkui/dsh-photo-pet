@@ -46,6 +46,7 @@ let activityValue = { working: false };
 let uploadCount = 0;
 let updatePostCount = 0;
 let uninstallPostCount = 0;
+let failActions = false; // simulate a failed real update/uninstall command
 globalThis.fetch = async (url, options = {}) => {
   const u = String(url);
   if (u.includes('/api/photo-pet/state')) {
@@ -61,10 +62,16 @@ globalThis.fetch = async (url, options = {}) => {
   }
   if (u.includes('/api/photo-pet/update') && options.method === 'POST') {
     updatePostCount += 1;
+    if (failActions) {
+      return { ok: true, status: 200, json: async () => ({ ok: false, error: 'update-failed', detail: 'pnpm not found on PATH' }) };
+    }
     return { ok: true, status: 200, json: async () => ({ ok: true, updated: false, installed: '0.1.1', latest: '0.1.1' }) };
   }
   if (u.includes('/api/photo-pet/uninstall') && options.method === 'POST') {
     uninstallPostCount += 1;
+    if (failActions) {
+      return { ok: true, status: 200, json: async () => ({ ok: false, error: 'uninstall-failed', detail: 'dsh: pnpm not found' }) };
+    }
     return { ok: true, status: 200, json: async () => ({ ok: true, restarting: true }) };
   }
   if (u.includes('/api/photo-pet/photo')) {
@@ -557,5 +564,13 @@ assert(updatePostCount === 1 && updateResult !== null && updateResult.updated ==
 assert(updateResult !== null && updateResult.installed === '0.1.1' && updateResult.latest === '0.1.1', 'up-to-date response carries installed/latest versions');
 const uninstallResult = await pluginManage.uninstall();
 assert(uninstallPostCount === 1 && uninstallResult !== null && uninstallResult.ok === true, 'uninstall POST fired');
+
+// A failed real command must surface as ok:false (no silent "restarting" lie).
+failActions = true;
+const failedUpdate = await pluginManage.update();
+assert(failedUpdate !== null && failedUpdate.ok === false && failedUpdate.error === 'update-failed', 'failed update surfaces ok:false');
+const failedUninstall = await pluginManage.uninstall();
+assert(failedUninstall !== null && failedUninstall.ok === false && failedUninstall.error === 'uninstall-failed', 'failed uninstall surfaces ok:false');
+failActions = false;
 
 console.log('\nSMOKE TEST PASSED');
