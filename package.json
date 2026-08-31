@@ -1,6 +1,6 @@
 {
   "name": "dsh-photo-pet",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Photo pet plugin for the DeepSeek Harness (DSH) Web GUI: turn any uploaded photo into a floating pet that can be dragged, dressed up and chatted with. 照片宠物插件:把上传的照片变成 DSH Web GUI 里的浮动宠物,可拖拽、可换装、会说话",
   "type": "module",
   "main": "lib/index.js",
