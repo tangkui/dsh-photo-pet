@@ -524,6 +524,7 @@ const feedOnce = async (expected) => {
   });
   assert(document.querySelector('.pp-food') !== null, 'floating 💩 appears while feeding');
   assert(document.querySelector('.pp-food').textContent === '💩', 'floating pop-up is a 💩 (not a snack)');
+  assert(document.querySelectorAll('.pp-food').length >= 2, 'feeding pops out 2–3 turds');
   return document.querySelector('.pp-bubble').textContent;
 };
 const feedSeq = [
