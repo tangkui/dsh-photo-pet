@@ -6,9 +6,20 @@
 
 Upload your photo and it becomes a pet that lives in the corner of your browser: draggable, one-click AI cutout for a clean background, nameable, with a hover fan menu, and it bubbles custom lines while the model is working. The photo IS the pet — no frames, no templates, shown as-is.
 
-The plugin follows the official DSH plugin shape (cordis bundle: host half + client half in one package), mounts through the profile mechanism, and never patches DSH itself.
-
 ![Pet](docs/screenshot.png)
+
+## What is this? Where does it live?
+
+**DeepSeek Harness (DSH)** is an extensible AI-assistant runtime: a single `dsh` command boots it, and "profiles + plugins" compose different app shapes. `dsh web` starts the **web GUI** — the browser-based chat/tasks/settings UI, by default at `http://127.0.0.1:3080`.
+
+**This plugin installs into that web GUI**: once installed, a pet appears in the bottom-right corner of the page. Its look is the photo you upload; it bubbles lines while the model works, and hovering it pops up a function menu.
+
+```
+Browser (web GUI at 127.0.0.1:3080)
+└── dsh web profile
+    ├── Chat / Tasks / Settings (built into DSH)
+    └── 🐾 Floating pet in the corner ← this plugin (dsh-photo-pet)
+```
 
 ## Features
 
@@ -26,28 +37,48 @@ The plugin follows the official DSH plugin shape (cordis bundle: host half + cli
 | Hide / summon | One-click hide; hovering the spot brings up a summon button |
 | Settings panel | "My Pet" left-nav section: enable, visibility, name, size, position, trim/AI toggles, lines & menu config; renaming updates the menu live |
 
-## How it works
-
-- **Host half** (`lib/index.js`): registers the `photo-pet` settings namespace, serves `/api/photo-pet/*` routes (photo storage, activity polling) and the AI cutout proxy (`/api/photo-pet/ai/*`, model downloaded on demand and cached under `~/.dsh/photo-pet/ai/<version>/`).
-- **Client half** (`lib/client.js`): renders the pet, animations, bubbles, fan menu and the cutout editor in the browser; registers "My Pet" as a first-level settings section through the `settings.section` slot.
-- **Packaging**: profile dependency + `dsh.profile.bundles` registration; the plugin's `cordis.patch.yml` (`dsh.bundle.patch`) inserts its row into the web plugin roster.
-
 ## Installation
 
-### Requirements
+### Step 1: Install DeepSeek Harness
 
-- DeepSeek Harness (DSH) Web GUI `>= 0.1.1-rc.1`
-- Node.js 18+ (DSH bundles its own runtime)
+> Already using DSH (you can open the web GUI at `http://127.0.0.1:3080`)? **Skip to Step 2.**
 
-### Install via npm (after publishing, simplest)
+```bash
+# Requires Node.js 20+ (22 or 24 recommended)
+npm install -g @deepseek-ai/dsh
+
+# Verify
+dsh --version
+```
+
+### Step 2: Start the DSH web GUI
+
+```bash
+dsh web
+```
+
+Then open **http://127.0.0.1:3080** in your browser — this is the GUI the plugin moves into.
+
+> Port defaults to 3080; if it is taken, use e.g. `dsh web --port 8080` — nothing else changes.
+
+### Step 3: Install the plugin
+
+**Option A: one npm command (recommended)**
 
 ```bash
 dsh plugin --profile web add dsh-photo-pet
 ```
 
-DSH installs the plugin into the `web` profile and registers the bundle automatically; restart the web service and refresh the page.
+This command wires everything for you: installs the dependency and automatically adds the plugin to the `web` profile's `dsh.profile.bundles` registry. Then **restart the web service** and refresh the browser:
 
-### Install from GitHub
+```bash
+kill $(lsof -ti :3080)     # stop the old service
+dsh web                    # start it again
+```
+
+> Tip: if you see `pnpm not found`, install pnpm first: `npm install -g pnpm`.
+
+**Option B: install from GitHub (optional — for people who want to tweak the source)**
 
 ```bash
 # 1. Clone the plugin
@@ -90,7 +121,14 @@ kill $(lsof -ti :3080)
 curl -s http://127.0.0.1:3080/plugins/dsh-photo-pet/client.js
 ```
 
-### Configuration
+### Step 4: Make the pet yours
+
+1. Refresh the page — the default pet appears in the bottom-right corner
+2. Open **Settings → My Pet** in the left navigation
+3. Click **Upload photo** and pick your photo (AI cutout runs automatically; the image never leaves your machine)
+4. Name the pet and drag it where you like — done 🎉
+
+## Configuration
 
 Open **Settings → My Pet** in the left navigation:
 
@@ -102,10 +140,24 @@ Open **Settings → My Pet** in the left navigation:
 - **Hover menu items** — per-item toggles with show-all / hide-all shortcuts
 - **Quick actions** — upload photo / AI cutout / reset photo, same actions as the fan menu
 
-### Data & cache
+## Data & cache
 
 - Pet photo & settings: `~/.dsh/photo-pet/`
 - AI cutout model cache: `~/.dsh/photo-pet/ai/<version>/` (downloaded on first use, ~44 MB, offline afterwards)
+
+## Uninstall
+
+```bash
+dsh plugin --profile web remove dsh-photo-pet
+```
+
+To also remove the pet photo and model cache: `rm -rf ~/.dsh/photo-pet` (does not affect DSH itself).
+
+## How it works
+
+- **Host half** (`lib/index.js`): registers the `photo-pet` settings namespace, serves `/api/photo-pet/*` routes (photo storage, activity polling) and the AI cutout proxy (`/api/photo-pet/ai/*`, model downloaded on demand and cached under `~/.dsh/photo-pet/ai/<version>/`).
+- **Client half** (`lib/client.js`): renders the pet, animations, bubbles, fan menu and the cutout editor in the browser; registers "My Pet" as a first-level settings section through the `settings.section` slot.
+- **Packaging**: profile dependency + `dsh.profile.bundles` registration; the plugin's `cordis.patch.yml` (`dsh.bundle.patch`) inserts its row into the web plugin roster.
 
 ## Development
 
