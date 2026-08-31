@@ -61,7 +61,7 @@ globalThis.fetch = async (url, options = {}) => {
   }
   if (u.includes('/api/photo-pet/update') && options.method === 'POST') {
     updatePostCount += 1;
-    return { ok: true, status: 200, json: async () => ({ ok: true, updated: false }) };
+    return { ok: true, status: 200, json: async () => ({ ok: true, updated: false, installed: '0.1.1', latest: '0.1.1' }) };
   }
   if (u.includes('/api/photo-pet/uninstall') && options.method === 'POST') {
     uninstallPostCount += 1;
@@ -554,6 +554,7 @@ const versionInfo = await pluginManage.check();
 assert(versionInfo !== null && versionInfo.installed === '0.1.1' && versionInfo.latest === '0.1.1' && versionInfo.upToDate === true, 'version check returns installed/latest/upToDate');
 const updateResult = await pluginManage.update();
 assert(updatePostCount === 1 && updateResult !== null && updateResult.updated === false, 'update POST fired and reports up-to-date');
+assert(updateResult !== null && updateResult.installed === '0.1.1' && updateResult.latest === '0.1.1', 'up-to-date response carries installed/latest versions');
 const uninstallResult = await pluginManage.uninstall();
 assert(uninstallPostCount === 1 && uninstallResult !== null && uninstallResult.ok === true, 'uninstall POST fired');
 
