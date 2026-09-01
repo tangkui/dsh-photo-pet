@@ -509,7 +509,8 @@ capturedDisposer();
 
 console.log('feeding:');
 // 喂食 is a fan-menu button (🍗, configurable like the others). With custom
-// feedLines it rotates A→B→C→A per feed, and a floating snack appears.
+// feedLines it rotates A→B→C→A per feed; each feed opens the pet's mouth,
+// drops a 💩 into it, then the pet wobbles drunk with dizzy stars.
 settings = { enabled: true, visible: true, size: 140, right: 40, bottom: 40, name: '小宠', feedLines: 'A\nB\nC' };
 apply(ctx);
 await waitFor(() => document.querySelector('.pp-shell') !== null);
@@ -522,9 +523,6 @@ const feedOnce = async (expected) => {
     const b = document.querySelector('.pp-bubble');
     return b !== null && b.textContent === expected;
   });
-  assert(document.querySelector('.pp-food') !== null, 'floating 💩 appears while feeding');
-  assert(document.querySelector('.pp-food').textContent === '💩', 'floating pop-up is a 💩 (not a snack)');
-  assert(document.querySelectorAll('.pp-food').length >= 2, 'feeding pops out 2–3 turds');
   return document.querySelector('.pp-bubble').textContent;
 };
 const feedSeq = [
@@ -534,6 +532,15 @@ const feedSeq = [
   await feedOnce('A'),
 ];
 assert(feedSeq.join(',') === 'A,B,C,A', 'feed lines rotate A→B→C→A across feeds');
+// Mouth opens and the 💩 drops INTO it (eat stage, ~0.6s)…
+await feedOnce('B');
+assert(document.querySelector('.pp-mouth') !== null, 'mouth opens when feeding');
+assert(document.querySelector('.pp-fall') !== null, '💩 drops into the open mouth');
+// …then the pet is drunk: shell wobbles with dizzy stars, then recovers.
+await waitFor(() => document.querySelector('.pp-shell.pp-drunk') !== null, 1500);
+assert(document.querySelector('.pp-star') !== null, 'dizzy stars spin while drunk');
+await waitFor(() => document.querySelector('.pp-shell.pp-drunk') === null, 3000);
+assert(document.querySelector('.pp-mouth') === null, 'feeding animation fully recovers');
 capturedDisposer();
 
 console.log('settings card:');
